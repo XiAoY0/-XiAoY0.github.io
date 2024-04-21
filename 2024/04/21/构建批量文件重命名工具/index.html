@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.2.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/mc.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/mc.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha256-wiz7ZSCn/btzhjKDQBms9Hx4sSeUYsDrTLg7roPstac=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.19.2","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="使用 Python 和 PyQt 构建批量文件重命名工具-项目学习（原文链接）目录  演示demo 项目布局 主要步骤 步骤1：构建GUI 步骤2：创建PyQt骨架应用程序 步骤3：使用pathlib PyQt 线程重命名文件 步骤4：根据重命名进度更新GUI状态   总结  demo演示 项目布局 rprename_project&#x2F;是项目的根目录，在其中创建以下文件：     1. R">
+<meta property="og:type" content="article">
+<meta property="og:title" content="构建批量文件重命名工具">
+<meta property="og:url" content="http://example.com/2024/04/21/%E6%9E%84%E5%BB%BA%E6%89%B9%E9%87%8F%E6%96%87%E4%BB%B6%E9%87%8D%E5%91%BD%E5%90%8D%E5%B7%A5%E5%85%B7/index.html">
+<meta property="og:site_name" content="XIAOYE的博客">
+<meta property="og:description" content="使用 Python 和 PyQt 构建批量文件重命名工具-项目学习（原文链接）目录  演示demo 项目布局 主要步骤 步骤1：构建GUI 步骤2：创建PyQt骨架应用程序 步骤3：使用pathlib PyQt 线程重命名文件 步骤4：根据重命名进度更新GUI状态   总结  demo演示 项目布局 rprename_project&#x2F;是项目的根目录，在其中创建以下文件：     1. R">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/demo.gif">
+<meta property="og:image" content="http://example.com/total.png">
+<meta property="og:image" content="http://example.com/shili.png">
+<meta property="article:published_time" content="2024-04-21T08:00:43.000Z">
+<meta property="article:modified_time" content="2024-04-21T08:01:25.302Z">
+<meta property="article:author" content="XIAOYE">
+<meta property="article:tag" content="生活,C嘎嘎,python,QT,编译原理,前端">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/demo.gif">
+
+
+<link rel="canonical" href="http://example.com/2024/04/21/%E6%9E%84%E5%BB%BA%E6%89%B9%E9%87%8F%E6%96%87%E4%BB%B6%E9%87%8D%E5%91%BD%E5%90%8D%E5%B7%A5%E5%85%B7/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2024/04/21/%E6%9E%84%E5%BB%BA%E6%89%B9%E9%87%8F%E6%96%87%E4%BB%B6%E9%87%8D%E5%91%BD%E5%90%8D%E5%B7%A5%E5%85%B7/","path":"2024/04/21/构建批量文件重命名工具/","title":"构建批量文件重命名工具"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>构建批量文件重命名工具 | XIAOYE的博客</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">XIAOYE的博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">就算是失败，也要直到自己的极限在哪</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8-Python-%E5%92%8C-PyQt-%E6%9E%84%E5%BB%BA%E6%89%B9%E9%87%8F%E6%96%87%E4%BB%B6%E9%87%8D%E5%91%BD%E5%90%8D%E5%B7%A5%E5%85%B7-%E9%A1%B9%E7%9B%AE%E5%AD%A6%E4%B9%A0%EF%BC%88%E5%8E%9F%E6%96%87%E9%93%BE%E6%8E%A5%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">使用 Python 和 PyQt 构建批量文件重命名工具-项目学习（原文链接）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#demo%E6%BC%94%E7%A4%BA"><span class="nav-number">1.1.</span> <span class="nav-text">demo演示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E5%B8%83%E5%B1%80"><span class="nav-number">1.2.</span> <span class="nav-text">项目布局</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E8%A6%81%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.3.</span> <span class="nav-text">主要步骤</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="XIAOYE"
+      src="/images/head.jpg">
+  <p class="site-author-name" itemprop="name">XIAOYE</p>
+  <div class="site-description" itemprop="description">热爱生活，热爱学习，记录学习之路，记录生活</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/04/21/%E6%9E%84%E5%BB%BA%E6%89%B9%E9%87%8F%E6%96%87%E4%BB%B6%E9%87%8D%E5%91%BD%E5%90%8D%E5%B7%A5%E5%85%B7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpg">
+      <meta itemprop="name" content="XIAOYE">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="XIAOYE的博客">
+      <meta itemprop="description" content="热爱生活，热爱学习，记录学习之路，记录生活">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="构建批量文件重命名工具 | XIAOYE的博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          构建批量文件重命名工具
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2024-04-21 16:00:43 / 修改时间：16:01:25" itemprop="dateCreated datePublished" datetime="2024-04-21T16:00:43+08:00">2024-04-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="使用-Python-和-PyQt-构建批量文件重命名工具-项目学习（原文链接）"><a href="#使用-Python-和-PyQt-构建批量文件重命名工具-项目学习（原文链接）" class="headerlink" title="使用 Python 和 PyQt 构建批量文件重命名工具-项目学习（原文链接）"></a>使用 Python 和 PyQt 构建批量文件重命名工具-项目学习（<a href="%22https://realpython.com/bulk-file-rename-tool-python/#demo-bulk-file-rename-tool-with-python-and-pyqt%22">原文链接</a>）</h1><p>目录</p>
+<ul>
+<li>演示demo</li>
+<li>项目布局</li>
+<li>主要步骤<ul>
+<li>步骤1：构建GUI</li>
+<li>步骤2：创建PyQt骨架应用程序</li>
+<li>步骤3：使用pathlib PyQt 线程重命名文件</li>
+<li>步骤4：根据重命名进度更新GUI状态</li>
+</ul>
+</li>
+<li>总结</li>
+</ul>
+<h2 id="demo演示"><a href="#demo演示" class="headerlink" title="demo演示"></a>demo演示</h2><p><img src="/demo.gif" alt="demo" title="demo"></p>
+<h2 id="项目布局"><a href="#项目布局" class="headerlink" title="项目布局"></a>项目布局</h2><p><img src="/total.png" alt="files" title="files"></p>
+<p>rprename_project&#x2F;是项目的根目录，在其中创建以下文件：</p>
+<pre><code>    1. README.md
+    2. requirements.txt 提供项目的外部依赖项列表
+    3. rprenamer.py 提供一个入口脚本运行应用程序
+</code></pre>
+<p>rprename&#x2F;目录将包含一个包含以下模块的Python包：</p>
+<pre><code>    1. __init__.py 将rprename/作为Python包启动
+    2. app.py 提供PyQt骨架应用程序
+    3. rename.py 提供程序重命名功能
+    4. view.py 提供应用程序的GUI和Qt相关槽函数实现
+</code></pre>
+<p>ui&#x2F;子目录包含所有GUI文件：</p>
+<pre><code>    1. __init__.py 表明这是一个包
+    2. window.ui 程序ui框架 在QT Designer 中设计后生成
+    3. window.py 可以由window.ui经pyuic5工具直接生成
+</code></pre>
+<h2 id="主要步骤"><a href="#主要步骤" class="headerlink" title="主要步骤"></a>主要步骤</h2><ol>
+<li><p>使用QTDesigner构建GUI界面<br><img src="/shili.png" alt="files" title="files"><br>详情见原文视频</p>
+</li>
+<li><p>创建pyQT骨架应用</p>
+<ol>
+<li>rprename&#x2F;<strong>init</strong>.py 添加</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># -*- coding: utf-8 -*- </span><br><span class="line"># rprename/__init__.py</span><br><span class="line"></span><br><span class="line">&quot;&quot;&quot;This module provides the rprename package.&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">__version__ = &quot;0.1.0&quot; #描述应用版本信息</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>rprename&#x2F;views.py添加</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line"># rprename/views.py</span><br><span class="line"></span><br><span class="line">&quot;&quot;&quot;This module provides the RP Renamer main window.&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">from PyQt5.QtWidgets import QWidget #最开始的  qtDesigner 用的时widget类 </span><br><span class="line"></span><br><span class="line">from .ui.window import Ui_Form #将ui文件作为包导入</span><br><span class="line"></span><br><span class="line">class Window(QWidget, Ui_Form):#创建了一个Window 类 继承自 QWidget和Ui_Form </span><br><span class="line">    #类的构建函数</span><br><span class="line">    def __init__(self):</span><br><span class="line">        #super()调用父类的构造</span><br><span class="line">        super().__init__()</span><br><span class="line">        self._setupUI()</span><br><span class="line"></span><br><span class="line">    def _setupUI(self):</span><br><span class="line">        self.setupUi(self)</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>rprename&#x2F;app.py添加</li>
+</ol>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line"># rprename/app.py</span><br><span class="line">   </span><br><span class="line">&quot;&quot;&quot;This module provides the RP Renamer application.&quot;&quot;&quot;</span><br><span class="line">   </span><br><span class="line">import sys</span><br><span class="line">   </span><br><span class="line">from PyQt5.QtWidgets import QApplication</span><br><span class="line">   </span><br><span class="line">from .views import Window</span><br><span class="line">   </span><br><span class="line"># 将main()定义为应用程序的主函数</span><br><span class="line">def main():</span><br><span class="line">    # Create the application</span><br><span class="line">    # 创建QApplication类的实例app</span><br><span class="line">    app = QApplication(sys.argv)</span><br><span class="line">    # Create and show the main window</span><br><span class="line">    # Window 是导入的views中的对象 创建Window类的实例Win</span><br><span class="line">    win = Window()</span><br><span class="line">    win.show()</span><br><span class="line">    # Run the event loop</span><br><span class="line">    # 使用了sys模块中exit()方法</span><br><span class="line">    sys.exit(app.exec())</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>rprenamer.py 添加(<a href="%22https://zhuanlan.zhihu.com/p/340997807%22"><strong>name</strong>&#x3D;&#x3D;”<strong>main</strong>“详解</a>)</li>
+</ol>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python3</span><br><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line"># rprenamer.py</span><br><span class="line">   </span><br><span class="line">&quot;&quot;&quot;This module provides the RP Renamer entry-point script.&quot;&quot;&quot;</span><br><span class="line">   </span><br><span class="line">from rprename.app import main</span><br><span class="line">   </span><br><span class="line">if __name__ == &quot;__main__&quot;:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用Pathlib和PyQt thread 批量重命名文件</p>
+<ol>
+<li>rprename&#x2F;views.py更新</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line"># rprename/views.py</span><br><span class="line"></span><br><span class="line">&quot;&quot;&quot;This module provides the RP Renamer main window.&quot;&quot;&quot;</span><br><span class="line"></span><br><span class="line">from PyQt5.QtWidgets import QWidget # 最开始的  qtDesigner 用的时widget类 </span><br><span class="line">from PyQt5.QtWidgets import QFileDialog #Loadfile按钮用到的QT类  </span><br><span class="line">from collections import deque  # collection 提供了格外的python数据结构 导入双端队列进行操作更简单</span><br><span class="line">from .ui.window import Ui_Form #将ui文件作为包导入</span><br><span class="line">from pathlib import Path # python的文件处理包 主要用到Path.rename()来重命名文件</span><br><span class="line"></span><br><span class="line"># 过滤器常量 </span><br><span class="line">FILTERS = &quot;;;&quot;.join(</span><br><span class="line">    (</span><br><span class="line">        &quot;PNG Files (*.png)&quot;,</span><br><span class="line">        &quot;JPEG Files (*.jpeg)&quot;,</span><br><span class="line">        &quot;JPG Files (*.jpg)&quot;,</span><br><span class="line">        &quot;GIF Files (*.gif)&quot;,</span><br><span class="line">        &quot;Text Files (*.txt)&quot;,</span><br><span class="line">        &quot;Python Files (*.py)&quot;,</span><br><span class="line">    )</span><br><span class="line">)</span><br><span class="line">class Window(QWidget, Ui_Form):#创建了一个Window 类 继承自 QWidget和Ui_Form </span><br><span class="line">    #类的构建函数</span><br><span class="line">    def __init__(self):</span><br><span class="line">        #super()调用父类的构造</span><br><span class="line">        super().__init__()</span><br><span class="line">        # 创建一个deque对象 _files</span><br><span class="line">        self._files = deque()</span><br><span class="line">        # 创建_filesCount存储文件数量</span><br><span class="line">        self._filesCount = len(self._files)</span><br><span class="line"></span><br><span class="line">        self._setupUI()</span><br><span class="line"></span><br><span class="line">    def _setupUI(self):</span><br><span class="line">        self.setupUi(self)</span><br><span class="line"></span><br><span class="line">    #QT 槽函数 调用下一个LoadFiles（）函数</span><br><span class="line">    def _connectSignalsSlots(self):</span><br><span class="line">        self.loadFilesButton.clicked.connect(self.loadFiles)</span><br><span class="line"></span><br><span class="line">    def loadFiles(self):</span><br><span class="line">        # 点击LoadFiles按钮 右侧列表清空 </span><br><span class="line">        self.dstFileList.clear()</span><br><span class="line">        # 检测当前行编辑框 是否为空</span><br><span class="line">        if self.dirEdit.text():# 不为空，则initDir初始化为当前目录</span><br><span class="line">            initDir = self.dirEdit.text()</span><br><span class="line">        else:# 初始目录被设置为path .home()，它返回当前用户主文件夹的路径</span><br><span class="line">            initDir = str(Path.home())</span><br><span class="line"></span><br><span class="line">        # QFileDialog. getopenfilename ()这个静态方法接受几个参数，创建一个允许用户选择一个或多个文件的对话框，并返回一个基于字符串的所选文件路径列表。它还返回当前使用的文件过滤器。    </span><br><span class="line">        # (parent,caption,dir,filter)其中parent设置父亲 caption设置显示字符串 dir设置路径 filter设置文件过滤</span><br><span class="line">        files, filter = QFileDialog.getOpenFileNames(</span><br><span class="line">            self, &quot;Choose Files to Rename&quot;, initDir, filter=FILTERS</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        # 有文件被选择</span><br><span class="line">        if len(files) &gt; 0:</span><br><span class="line">            # 切片当前过滤器字符串以提取文件扩展名。</span><br><span class="line">            fileExtension = filter[filter.index(&quot;*&quot;) : -1]</span><br><span class="line">            # 将. extensionlabel对象的文本设置为上一行提取的文件扩展名。</span><br><span class="line">            self.extensionLabel.setText(fileExtension)</span><br><span class="line">            # 将列表中第一个元素的上级目录 作为源目录</span><br><span class="line">            srcDirName = str(Path(files[0]).parent)</span><br><span class="line">            # 将. diredit行编辑的文本设置为上一行获得的目录路径。</span><br><span class="line">            self.dirEdit.setText(srcDirName)</span><br><span class="line">            # 为每个文件创建一个Path对象，并将其附加到._files 同时在左侧界面显示</span><br><span class="line">            for file in files:</span><br><span class="line">                self._files.append(Path(file))</span><br><span class="line">                self.srcFileList.addItem(file)</span><br><span class="line">            self._filesCount = len(self._files)</span><br><span class="line">    # python 不区分私有或共有属性</span><br></pre></td></tr></table></figure>
+
+<p>完成了 Loadfile按钮的参函数定义和实现 同时 对载入文件进行加载</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2024/04/20/%E6%AF%9B%E6%B3%BD%E4%B8%9C%E6%A6%82%E8%AE%BA%E5%AE%9E%E8%B7%B5-%E6%94%B9%E9%9D%A9%E5%BC%80%E6%94%BE%E5%90%8E%E7%9A%84%E4%BA%8C%E5%8D%81%E5%B9%B4%E4%B8%AD%E5%9B%BD%E6%98%AF%E5%A6%82%E4%BD%95%E5%8F%91%E5%B1%95%E7%9A%84/" rel="prev" title="毛泽东概论实践-改革开放后的二十年中国是如何发展的">
+                  <i class="fa fa-angle-left"></i> 毛泽东概论实践-改革开放后的二十年中国是如何发展的
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2024</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">XIAOYE</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
+<!-- 页面点击小红心 -->
+<script type="text/javascript" src="/js/src/clicklove.js"></script>
